@@ -53,12 +53,12 @@
             margin: 0 auto;
             padding: 15px; 
             box-sizing: border-box;
-            line-height: 1.15; /* บีบระยะบรรทัดขึ้นนิดหน่อย */
+            line-height: 1.15;
         }
         
         #pdf-content, #pdf-content p, #pdf-content td, #pdf-content th, 
         #pdf-content span, #pdf-content label, #pdf-content input, #pdf-content textarea {
-            font-size: 15pt; /* ปรับลดลงเพื่อให้จุใน 1 หน้าพอดี */
+            font-size: 15pt;
         }
 
         #pdf-content h2, #pdf-content h3, #pdf-content h4, #pdf-content .heading-text {
@@ -81,12 +81,12 @@
         #pdf-content .gov-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 5px; /* ลดช่องไฟใต้ตาราง */
+            margin-bottom: 5px; 
         }
         #pdf-content .gov-table th, 
         #pdf-content .gov-table td {
             border: 1px solid #000;
-            padding: 2px 6px; /* ลด padding แนวนอนและตั้ง */
+            padding: 2px 6px; 
             vertical-align: middle;
         }
         #pdf-content .gov-table th {
@@ -97,57 +97,87 @@
             font-size: 13pt;
         }
 
+        /* CSS สำหรับ Custom Checkbox Dropdown */
+        .dropdown-check-list {
+            display: inline-block;
+            position: relative;
+        }
+        .dropdown-check-list .anchor {
+            position: relative;
+            cursor: pointer;
+            display: inline-block;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            background: #fff;
+            min-width: 180px;
+            font-size: 0.875rem;
+        }
+        .dropdown-check-list .anchor:after {
+            position: absolute;
+            content: "";
+            border-left: 2px solid black;
+            border-top: 2px solid black;
+            padding: 3px;
+            right: 12px;
+            top: 40%;
+            transform: translateY(-50%) rotate(-135deg);
+        }
+        .dropdown-check-list .items {
+            padding: 8px;
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            top: 100%;
+            left: 0;
+            z-index: 50;
+            width: max-content;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .dropdown-check-list.visible .items {
+            display: block;
+        }
+        .dropdown-check-list .items li {
+            list-style: none;
+            margin-bottom: 4px;
+        }
+        .dropdown-check-list .items input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
         /* ---------------------------------------------------
            ตั้งค่าสำหรับการ Export เป็น PDF ด้วย Native Browser Print
            --------------------------------------------------- */
         @page {
             size: A4 portrait;
-            margin: 15mm; /* ลดระยะขอบจาก 20mm เป็น 15mm เพื่อเพิ่มพื้นที่ปลอดภัยด้านล่าง */
+            margin: 15mm;
         }
 
         @media print {
-            /* ซ่อนทุกอย่างบนหน้าเว็บ ยกเว้นส่วนที่จะให้ Print */
-            body * {
-                visibility: hidden;
-            }
+            body * { visibility: hidden; }
+            #pdf-content, #pdf-content * { visibility: visible; }
             
-            /* แสดงเฉพาะเนื้อหาใน #pdf-content */
-            #pdf-content, #pdf-content * {
-                visibility: visible;
-            }
-            
-            /* จัดตำแหน่งให้พอดีกระดาษที่สุด */
             #pdf-content {
                 position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0 !important; /* ระยะขอบถูกจัดการโดย @page แล้ว */
+                left: 0; top: 0; width: 100%;
+                margin: 0; padding: 0 !important;
                 box-shadow: none !important;
                 page-break-after: avoid;
             }
             
-            /* ล้างระยะขอบและเงาของการ์ดรอบนอก ให้แนบสนิทกับกระดาษ */
             #print-container, #pdf-wrapper {
-                box-shadow: none !important;
-                border: none !important;
-                border-radius: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background-color: transparent !important;
-                width: 100% !important;
-                max-width: 100% !important;
+                box-shadow: none !important; border: none !important; border-radius: 0 !important;
+                margin: 0 !important; padding: 0 !important; background-color: transparent !important;
+                width: 100% !important; max-width: 100% !important;
             }
 
-            /* ให้ตารางพิมพ์เส้นขอบออกมาคมชัด */
-            .gov-table th, .gov-table td {
-                border: 1pt solid #000 !important;
-            }
-
-            nav, footer, .hide-on-print {
-                display: none !important;
-            }
+            .gov-table th, .gov-table td { border: 1pt solid #000 !important; }
+            nav, footer, .hide-on-print { display: none !important; }
         }
     </style>
 </head>
@@ -215,9 +245,13 @@
                     <option value="unbilled">เฉพาะ ไฟสูญเสีย/ไฟฟรี</option>
                 </select>
 
-                <select id="filterCategory" class="bg-white border border-slate-300 text-sm rounded-lg focus:ring-brand focus:border-brand p-2 outline-none">
-                    <option value="all">ทุกประเภทผู้ใช้ไฟ</option>
-                </select>
+                <!-- Checkbox Dropdown สำหรับเลือกหลายประเภท -->
+                <div id="categoryCheckList" class="dropdown-check-list" tabindex="100">
+                    <span class="anchor" id="categoryAnchor">ทุกประเภทผู้ใช้ไฟ</span>
+                    <ul class="items" id="filterCategoryItems">
+                        <!-- ตัวเลือกจะถูกสร้างจาก JavaScript -->
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -293,7 +327,6 @@
                         <h2 class="heading-text">ความคิดเห็นเกี่ยวกับภาวะเศรษฐกิจจังหวัดน่าน ปี พ.ศ. 2569</h2>
                     </div>
                     
-                    <!-- ลด Margin ตรงคำชี้แจงเพื่อประหยัดที่ -->
                     <div style="text-align: left; margin-bottom: 8px; text-justify: inter-word; text-align: justify;">
                         <span style="font-weight: bold;">คำชี้แจง:</span> แบบสอบถามนี้จัดทำขึ้นเพื่อใช้ประกอบการประมาณการเศรษฐกิจของจังหวัด มิได้ใช้เป็นข้อมูลเพื่อการเผยแพร่หรือนำไปอ้างอิงเพื่อการอื่นใด การจัดทำประมาณการฯ อยู่ในขั้นตอนกรณีศึกษา โดยใช้วิธีการจัดทำประมาณการเศรษฐกิจของจังหวัด (Provincial Economic Management Chart) ซึ่งเป็นเครื่องมือช่วยในการวิเคราะห์และคาดการณ์แนวโน้มเศรษฐกิจของจังหวัดในระยะหนึ่ง
                     </div>
@@ -401,7 +434,6 @@
                         </tr>
                     </table>
 
-                    <!-- ปรับกล่องข้อเสนอแนะให้เตี้ยลงเพื่อประหยัดพื้นที่ -->
                     <div style="margin-bottom: 6px;">
                         <label class="heading-text font-bold" style="display: block; margin-bottom: 2px;">ข้อเสนอแนะเพิ่มเติม:</label>
                         <textarea style="width: 100%; border: 1px solid #94a3b8; padding: 4px; outline: none; height: 40px; border-radius: 4px; font-family: inherit; resize: none; background: transparent;"></textarea>
@@ -432,6 +464,85 @@
 
         let rawData = generateMockData();
 
+        // ---------------------------------------------------------
+        // การทำงานของ Checkbox Dropdown สำหรับเลือกประเภทผู้ใช้ไฟ
+        // ---------------------------------------------------------
+        const checkList = document.getElementById('categoryCheckList');
+        const checkListAnchor = document.getElementById('categoryAnchor');
+        const filterCategoryItems = document.getElementById('filterCategoryItems');
+
+        checkListAnchor.onclick = function(evt) {
+            if (checkList.classList.contains('visible')) checkList.classList.remove('visible');
+            else checkList.classList.add('visible');
+        }
+
+        // ปิด Dropdown เมื่อคลิกที่อื่น
+        document.addEventListener('click', function(event) {
+            if (!checkList.contains(event.target)) {
+                checkList.classList.remove('visible');
+            }
+        });
+
+        function populateCategoryDropdown() {
+            const groupFilter = document.getElementById('filterRevenueGroup').value;
+            filterCategoryItems.innerHTML = '';
+            
+            let listToUse = (groupFilter === 'billed') ? billedCategories : ((groupFilter === 'unbilled') ? unbilledCategories : [...billedCategories, ...unbilledCategories]);
+            
+            // เพิ่มปุ่ม "เลือกทั้งหมด"
+            let allItem = document.createElement('li');
+            allItem.innerHTML = `<label class="font-bold text-brand"><input type="checkbox" id="checkAllCategories" checked> เลือกทั้งหมด</label><hr class="my-1">`;
+            filterCategoryItems.appendChild(allItem);
+
+            listToUse.forEach(cat => { 
+                let li = document.createElement('li');
+                li.innerHTML = `<label class="text-slate-700 cursor-pointer w-full block"><input type="checkbox" class="cat-checkbox" value="${cat}" checked> ${cat}</label>`;
+                filterCategoryItems.appendChild(li);
+            });
+
+            // Event ให้อัปเดตกราฟเมื่อกด Checkbox ตัวใดๆ
+            const allCheckboxes = document.querySelectorAll('.cat-checkbox');
+            const checkAllBtn = document.getElementById('checkAllCategories');
+
+            checkAllBtn.addEventListener('change', function() {
+                allCheckboxes.forEach(cb => cb.checked = this.checked);
+                updateDropdownLabel();
+                updateDashboard();
+            });
+
+            allCheckboxes.forEach(cb => {
+                cb.addEventListener('change', function() {
+                    let totalChecked = document.querySelectorAll('.cat-checkbox:checked').length;
+                    checkAllBtn.checked = (totalChecked === allCheckboxes.length);
+                    updateDropdownLabel();
+                    updateDashboard();
+                });
+            });
+
+            updateDropdownLabel();
+        }
+
+        // อัปเดตข้อความบนปุ่ม Dropdown ให้สอดคล้องกับที่เลือก
+        function updateDropdownLabel() {
+            let totalChecked = document.querySelectorAll('.cat-checkbox:checked').length;
+            let totalBoxes = document.querySelectorAll('.cat-checkbox').length;
+            
+            if(totalChecked === 0) checkListAnchor.innerText = "ไม่ได้เลือกประเภท";
+            else if(totalChecked === totalBoxes) checkListAnchor.innerText = "ทุกประเภทผู้ใช้ไฟ";
+            else checkListAnchor.innerText = `เลือกแล้ว (${totalChecked} ประเภท)`;
+        }
+
+        // ฟังก์ชันดึงประเภทที่ถูกติ๊กเลือกไว้ เพื่อเอาไปคำนวณ
+        function getSelectedCategories() {
+            let checkedBoxes = document.querySelectorAll('.cat-checkbox:checked');
+            let selected = [];
+            checkedBoxes.forEach(cb => selected.push(cb.value));
+            return selected;
+        }
+
+        // ---------------------------------------------------------
+        // ระบบอัปโหลดและประมวลผล Excel
+        // ---------------------------------------------------------
         document.getElementById('excelFileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -549,19 +660,13 @@
         let charts = { line: null, bar: null, combo: null, doughnut: null };
         Chart.defaults.font.family = "'Prompt', sans-serif";
 
-        function populateCategoryDropdown() {
-            const groupFilter = document.getElementById('filterRevenueGroup').value;
-            const catSelect = document.getElementById('filterCategory');
-            catSelect.innerHTML = '<option value="all">ทุกประเภทผู้ใช้ไฟ</option>';
-            let listToUse = (groupFilter === 'billed') ? billedCategories : ((groupFilter === 'unbilled') ? unbilledCategories : [...billedCategories, ...unbilledCategories]);
-            listToUse.forEach(cat => { catSelect.innerHTML += `<option value="${cat}">${cat}</option>`; });
-        }
-
         function updateDashboard() {
             const selYear = document.getElementById('filterYear').value;
             const selMonth = document.getElementById('filterMonth').value;
             const selGroup = document.getElementById('filterRevenueGroup').value;
-            const selCategory = document.getElementById('filterCategory').value;
+            
+            // ดึงประเภททั้งหมดที่ผู้ใช้ติ๊ก Checkbox ไว้
+            const activeCategories = getSelectedCategories();
 
             let currentData = rawData.filter(d => {
                 return (selYear === 'all' || d.year == selYear) && (selMonth === 'all' || d.month == selMonth);
@@ -569,8 +674,17 @@
 
             let sumBilled = 0, sumUnbilled = 0;
             currentData.forEach(d => {
-                if (selGroup === 'all' || selGroup === 'billed') sumBilled += (selCategory === 'all') ? Object.values(d.billed).reduce((a, b) => a + b, 0) : (d.billed[selCategory] || 0);
-                if (selGroup === 'all' || selGroup === 'unbilled') sumUnbilled += (selCategory === 'all') ? Object.values(d.unbilled).reduce((a, b) => a + b, 0) : (d.unbilled[selCategory] || 0);
+                // บวกรวมเฉพาะประเภทที่อยู่ใน List ที่ติ๊กเลือกไว้เท่านั้น
+                if (selGroup === 'all' || selGroup === 'billed') {
+                    for (let cat in d.billed) {
+                        if (activeCategories.includes(cat)) sumBilled += d.billed[cat];
+                    }
+                }
+                if (selGroup === 'all' || selGroup === 'unbilled') {
+                    for (let cat in d.unbilled) {
+                        if (activeCategories.includes(cat)) sumUnbilled += d.unbilled[cat];
+                    }
+                }
             });
 
             let sumTotal = sumBilled + sumUnbilled;
@@ -587,9 +701,12 @@
                 let prevData = rawData.filter(d => (d.year == selYear - 1) && (selMonth === 'all' || d.month == selMonth));
                 let prevSum = 0;
                 prevData.forEach(d => {
-                    let b = (selCategory === 'all') ? Object.values(d.billed).reduce((a, b) => a + b, 0) : (d.billed[selCategory] || 0);
-                    let ub = (selCategory === 'all') ? Object.values(d.unbilled).reduce((a, b) => a + b, 0) : (d.unbilled[selCategory] || 0);
-                    prevSum += (selGroup === 'billed') ? b : ((selGroup === 'unbilled') ? ub : (b + ub));
+                    if (selGroup === 'all' || selGroup === 'billed') {
+                        for(let cat in d.billed) if(activeCategories.includes(cat)) prevSum += d.billed[cat];
+                    }
+                    if (selGroup === 'all' || selGroup === 'unbilled') {
+                        for(let cat in d.unbilled) if(activeCategories.includes(cat)) prevSum += d.unbilled[cat];
+                    }
                 });
                 let growth = prevSum > 0 ? ((sumTotal - prevSum) / prevSum) * 100 : 0;
                 growthEl.innerText = (prevSum > 0 ? (growth > 0 ? '+' : '') + growth.toFixed(2) + '%' : 'N/A');
@@ -601,13 +718,15 @@
                 growthLabelEl.innerText = "ไม่สามารถคำนวณเปรียบเทียบได้";
             }
 
-            drawChartLineYears(selGroup, selCategory); 
-            drawChartBar(currentData, selGroup);
-            drawChartCombo(currentData);
-            drawChartDoughnut(currentData, selGroup);
+            // ส่ง activeCategories ไปให้ระบบวาดกราฟเพื่อพล็อตเฉพาะตัวที่เลือก
+            drawChartLineYears(selGroup, activeCategories); 
+            drawChartBar(currentData, selGroup, activeCategories);
+            drawChartCombo(currentData, activeCategories);
+            drawChartDoughnut(currentData, selGroup, activeCategories);
         }
 
-        function drawChartLineYears(sG, sC) { 
+        // ปรับแต่งกราฟเส้น ให้คิดรวมเฉพาะ Checkbox ที่เลือก
+        function drawChartLineYears(sG, activeCategories) { 
             if (charts.line) charts.line.destroy();
             let availableYears = [...new Set(rawData.map(d => d.year))].sort();
             const colors = ['#cbd5e1', '#94a3b8', '#64748b', '#c084fc', '#9333ea', '#581c87'];
@@ -615,36 +734,68 @@
                 let mData = monthNamesTh.map((_, mIdx) => {
                     let d = rawData.find(x => x.year === yr && x.month === mIdx + 1);
                     if(!d) return 0;
-                    let b = (sC === 'all') ? Object.values(d.billed).reduce((a, b)=>a+b,0) : (d.billed[sC]||0);
-                    let ub = (sC === 'all') ? Object.values(d.unbilled).reduce((a, b)=>a+b,0) : (d.unbilled[sC]||0);
+                    
+                    let b = 0, ub = 0;
+                    for (let cat in d.billed) if(activeCategories.includes(cat)) b += d.billed[cat];
+                    for (let cat in d.unbilled) if(activeCategories.includes(cat)) ub += d.unbilled[cat];
+                    
                     return (sG === 'billed') ? b : ((sG === 'unbilled') ? ub : b + ub);
                 });
                 return { label: `ปี ${yr}`, data: mData, borderColor: colors[idx % colors.length], backgroundColor: colors[idx % colors.length], borderWidth: yr === Math.max(...availableYears) ? 3 : 2, tension: 0.3 };
             });
             charts.line = new Chart(document.getElementById('chartLineYears'), { type: 'line', data: { labels: monthNamesTh, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { mode: 'index', intersect: false } }, scales: { y: { title: { display: true, text: 'ล้านหน่วย' } } } } });
         }
-        function drawChartBar(data, sG) { 
+
+        function drawChartBar(data, sG, activeCategories) { 
             if (charts.bar) charts.bar.destroy();
             let labels = [], values = [];
-            if (sG === 'all' || sG === 'billed') billedCategories.forEach(cat => { labels.push(cat); values.push(data.reduce((acc, row) => acc + (row.billed[cat] || 0), 0)); });
-            if (sG === 'all' || sG === 'unbilled') unbilledCategories.forEach(cat => { labels.push(cat + ' (Loss)'); values.push(data.reduce((acc, row) => acc + (row.unbilled[cat] || 0), 0)); });
+            
+            // กรองให้วาดเฉพาะหมวดหมู่ที่ถูกติ๊ก
+            if (sG === 'all' || sG === 'billed') {
+                billedCategories.forEach(cat => { 
+                    if(activeCategories.includes(cat)) {
+                        labels.push(cat); values.push(data.reduce((acc, row) => acc + (row.billed[cat] || 0), 0)); 
+                    }
+                });
+            }
+            if (sG === 'all' || sG === 'unbilled') {
+                unbilledCategories.forEach(cat => { 
+                    if(activeCategories.includes(cat)) {
+                        labels.push(cat + ' (Loss)'); values.push(data.reduce((acc, row) => acc + (row.unbilled[cat] || 0), 0)); 
+                    }
+                });
+            }
+            
             charts.bar = new Chart(document.getElementById('chartBarCategory'), { type: 'bar', data: { labels: labels, datasets: [{ label: 'ล้านหน่วย', data: values, backgroundColor: '#a855f7', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxRotation: 45, minRotation: 45 } } } } });
         }
-        function drawChartCombo(data) { 
+
+        function drawChartCombo(data, activeCategories) { 
             if (charts.combo) charts.combo.destroy();
             let monthlyAgg = monthNamesTh.map((_, i) => {
                 let monthData = data.filter(d => d.month === i + 1);
                 let b = 0, ub = 0;
-                monthData.forEach(d => { b += Object.values(d.billed).reduce((a,b)=>a+b,0); ub += Object.values(d.unbilled).reduce((a,b)=>a+b,0); });
+                monthData.forEach(d => { 
+                    for(let cat in d.billed) if(activeCategories.includes(cat)) b += d.billed[cat];
+                    for(let cat in d.unbilled) if(activeCategories.includes(cat)) ub += d.unbilled[cat];
+                });
                 return { billed: b, unbilled: ub, pLoss: (b+ub > 0) ? (ub/(b+ub))*100 : 0 };
             });
             charts.combo = new Chart(document.getElementById('chartCombo'), { type: 'bar', data: { labels: monthNamesTh, datasets: [{ type: 'line', label: '% Loss', data: monthlyAgg.map(x => x.pLoss), borderColor: '#f43f5e', backgroundColor: '#f43f5e', borderWidth: 2, yAxisID: 'yLoss', tension: 0.3, marker: 'circle' }, { type: 'bar', label: 'Billed', data: monthlyAgg.map(x => x.billed), backgroundColor: '#9333ea', yAxisID: 'yUnit' }, { type: 'bar', label: 'Loss', data: monthlyAgg.map(x => x.unbilled), backgroundColor: '#cbd5e1', yAxisID: 'yUnit' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, yUnit: { stacked: true, position: 'left' }, yLoss: { position: 'right', min: 0, grid: { drawOnChartArea: false } } } } });
         }
-        function drawChartDoughnut(data, sG) { 
+
+        function drawChartDoughnut(data, sG, activeCategories) { 
             if (charts.doughnut) charts.doughnut.destroy();
             let breakdown = [];
-            if (sG === 'all' || sG === 'billed') billedCategories.forEach(cat => breakdown.push({ name: cat, val: data.reduce((acc, row) => acc + (row.billed[cat] || 0), 0) }));
-            if (sG === 'all' || sG === 'unbilled') unbilledCategories.forEach(cat => breakdown.push({ name: cat + '(Loss)', val: data.reduce((acc, row) => acc + (row.unbilled[cat] || 0), 0) }));
+            if (sG === 'all' || sG === 'billed') {
+                billedCategories.forEach(cat => {
+                    if(activeCategories.includes(cat)) breakdown.push({ name: cat, val: data.reduce((acc, row) => acc + (row.billed[cat] || 0), 0) });
+                });
+            }
+            if (sG === 'all' || sG === 'unbilled') {
+                unbilledCategories.forEach(cat => {
+                    if(activeCategories.includes(cat)) breakdown.push({ name: cat + '(Loss)', val: data.reduce((acc, row) => acc + (row.unbilled[cat] || 0), 0) });
+                });
+            }
             breakdown.sort((a, b) => b.val - a.val);
             let top5 = breakdown.slice(0, 5);
             let othersVal = breakdown.slice(5).reduce((acc, curr) => acc + curr.val, 0);
@@ -652,8 +803,12 @@
             charts.doughnut = new Chart(document.getElementById('chartDoughnut'), { type: 'doughnut', data: { labels: top5.map(x => x.name), datasets: [{ data: top5.map(x => x.val), backgroundColor: ['#581c87', '#9333ea', '#c084fc', '#eab308', '#2dd4bf', '#cbd5e1'], borderWidth: 2, borderColor: '#fff' }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'right' } } } });
         }
 
-        ['filterYear', 'filterMonth', 'filterCategory'].forEach(id => document.getElementById(id).addEventListener('change', updateDashboard));
-        document.getElementById('filterRevenueGroup').addEventListener('change', function() { populateCategoryDropdown(); updateDashboard(); });
+        ['filterYear', 'filterMonth'].forEach(id => document.getElementById(id).addEventListener('change', updateDashboard));
+        
+        document.getElementById('filterRevenueGroup').addEventListener('change', function() { 
+            populateCategoryDropdown(); // เมื่อเปลี่ยนกลุ่ม ต้องรีเซ็ต Checkbox ใหม่
+            updateDashboard(); 
+        });
 
         function generateMockData() {
             let data = [];
